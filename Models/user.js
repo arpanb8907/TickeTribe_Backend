@@ -1,0 +1,52 @@
+import { Sequelize, DataTypes } from 'sequelize';
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
+    dialect: 'postgres',
+    dialectOptions: {
+        ssl: {
+            require: true,
+            rejectUnauthorized: false
+        }
+    }
+});
+
+const User = sequelize.define('User', {
+    id: {
+        type: DataTypes.INTEGER,
+        autoIncrement: true,
+        primaryKey: true
+    },
+    username: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        unique: true
+    },
+    email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
+        validate: {
+            isEmail: true
+        }
+    },
+    phone:{
+        type : DataTypes.STRING,
+        allowNull:false,
+        unique : true
+    },
+    password: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
+   
+    createdAt: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
+    },
+    updatedAt: {
+        type: DataTypes.DATE,
+        defaultValue: Sequelize.NOW
+    }
+});
+
+module.exports = User;
