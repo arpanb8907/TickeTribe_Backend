@@ -1,4 +1,7 @@
 import { Sequelize, DataTypes } from 'sequelize';
+import dotenv from "dotenv"
+
+dotenv.config()
 
 const sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
@@ -23,11 +26,11 @@ const User = sequelize.define('User', {
     },
     email: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
         unique: true,
-        validate: {
-            isEmail: true
-        }
+        // validate: {
+        //     isEmail: true
+        // }
     },
     phone:{
         type : DataTypes.STRING,
@@ -47,6 +50,11 @@ const User = sequelize.define('User', {
         type: DataTypes.DATE,
         defaultValue: Sequelize.NOW
     }
-});
 
-module.exports = User;
+},{ 
+    tableName : "User",
+    freezeTableName : true  
+});
+export {sequelize}
+export default User
+//module.exports = User;
