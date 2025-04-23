@@ -1,6 +1,9 @@
 import { where } from "sequelize";
 import User from "../Models/user.js";
 import bcrypt from "bcrypt";
+import { v4 as uuidv4 } from 'uuid';
+import jwt from 'jsonwebtoken';
+
 
 import { sendOTP } from "../Utils/sendOTP.js";
 
@@ -33,30 +36,7 @@ export const authenticate = async (req, res) => {
   }
 };
 
-export const login = async (req, res) => {
-  const { username, password } = req.body();
 
-  try {
-    const user = await User.findOne({ where: { username } });
-
-    if (!user) {
-      res.status(404).json({ message: `Invalid credentials` });
-      return;
-    }
-
-    const ismatch = await bcrypt.compare(password, user.password);
-
-    if (!ismatch) {
-      res.status(404).json({ message: `Invalid credentials` });
-      return;
-    }
-
-    return res.status(200).json({ message: `Login successful` });
-  } catch (error) {
-    console.error("Error in login:", error);
-    return res.status(500).json({ message: "Server error" });
-  }
-};
 
 export const verify_otp = async (req, res) => {
   const { otp, phone } = req.body;
@@ -75,10 +55,30 @@ export const verify_otp = async (req, res) => {
       console.log(user);
       if (!user) {
         // is user does not exist create an user
-        user = await User.create({ phone });
+        const userId = uuidv4()
+        user = await User.create({
+          username : userId,
+          phone : phone  
+          
+         });
       }
 
-      return res.status(200).json({ message: "OTP verified successfully" });
+      // Generate JWT token
+      const token = jwt.sign(
+        { id: user.id, phone: user.phone }, // payload
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" } // token expires in 1 day
+      );
+      return res.status(200).json({ message: "OTP verified successfully",
+        token,
+
+        user: {
+          id: user.id,
+          phone: user.phone,
+        },
+
+
+       });
     } else {
       return res.status(401).json({ message: "Invalid OTP or phone number" });
     }
